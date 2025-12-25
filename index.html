@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产业链与合作共赢小测验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #f5fafe;
+            padding: 20px;
+        }
+        .game-box {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .rule-card {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4299e1;
+        }
+        .rule-card h2 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .rule-card ul {
+            color: #4a5568;
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+        .progress {
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #38b2ac;
+            transition: width 0.5s;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+        }
+        .question-area {
+            margin-bottom: 30px;
+        }
+        .question-text {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .option {
+            width: 48%;
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .option:hover {
+            background: #e2e8f0;
+        }
+        .option.selected {
+            border-color: #9f7aea;
+            background: #fdf4ff;
+        }
+        .option.correct {
+            border-color: #48bb78;
+            background: #f0fdf4;
+        }
+        .option.incorrect {
+            border-color: #f56565;
+            background: #fee2e2;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .next-btn {
+            background: #38b2ac;
+            color: white;
+        }
+        .next-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        .tip {
+            background: #fef7fb;
+            padding: 15px;
+            border-left: 4px solid #ed8936;
+            margin-top: 20px;
+            color: #4a5568;
+        }
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 {
+            color: #2d3748;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .score {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #4a5568;
+        }
+        .answer-list {
+            margin-top: 20px;
+        }
+        .answer-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .answer-item:last-child {
+            border-bottom: none;
+        }
+        .answer-item p {
+            margin-bottom: 5px;
+        }
+        .restart-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 10px 20px;
+            background: #38b2ac;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-box">
+        <h1>产业链与合作共赢小测验</h1>
+        
+        <!-- 游戏玩法说明卡片 -->
+        <div class="rule-card">
+            <h2>🎮 游戏玩法说明</h2>
+            <ul>
+                <li>1. 共有10道题，每题10分，满分100分。</li>
+                <li>2. 每题有两个选项，点击选择你认为正确的答案，左右两侧都可以选。</li>
+                <li>3. 必须选择一个答案并点击“提交并进入下一题”才能继续。</li>
+                <li>4. 答错也可以继续答题，全部答完后会显示你的总分和每道题的标准答案。</li>
+            </ul>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+
+        <div class="question-area">
+            <div class="question-text" id="questionText">题目将在这里显示</div>
+        </div>
+
+        <div class="options">
+            <div class="option" id="optionA" onclick="selectOption('A')">
+                <div id="optionAText">选项A</div>
+            </div>
+            <div class="option" id="optionB" onclick="selectOption('B')">
+                <div id="optionBText">选项B</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div>第 <span id="currentQuestion">1</span> / 10 题</div>
+            <button class="btn next-btn" id="nextBtn" onclick="nextQuestion()" disabled>提交并进入下一题</button>
+        </div>
+
+        <div class="tip">
+            💡 本游戏围绕<strong>产业链、统一大市场</strong>等中国经济元素，以及<strong>合作共赢、可持续发展</strong>等世界和平发展启示设计。
+        </div>
+    </div>
+
+    <div class="result-modal" id="resultModal">
+        <div class="modal-content">
+            <h3>答题完成！</h3>
+            <div class="score">
+                你的得分：<span id="finalScore">0</span> / 100 分
+            </div>
+            <div class="answer-list" id="answerList">
+                <!-- 这里会显示每道题的作答情况和标准答案 -->
+            </div>
+            <button class="restart-btn" onclick="restartGame()">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                text: "关于中国产业链，下列说法更合理的是：",
+                a: "中国应尽量减少与其他国家的产业链合作，完全自给自足",
+                b: "中国应依托完整产业链，在开放合作中提升全球分工地位",
+                correct: "B"
+            },
+            {
+                text: "建设“统一大市场”的主要目的是：",
+                a: "在国内各地区之间设置贸易壁垒，保护本地产业",
+                b: "打破地方保护和市场分割，促进商品和要素在全国自由流动",
+                correct: "B"
+            },
+            {
+                text: "在全球产业链分工中，“合作共赢”最能体现为：",
+                a: "某一国占据所有高附加值环节，其他国家只能做低端加工",
+                b: "各国根据自身优势参与不同环节，通过协作实现共同发展",
+                correct: "B"
+            },
+            {
+                text: "面对产业链“卡脖子”风险，中国更应：",
+                a: "只依靠引进国外技术，不投入自主研发",
+                b: "在关键核心技术领域加大自主创新力度，同时保持开放合作",
+                correct: "B"
+            },
+            {
+                text: "关于“数字经济”与实体经济的关系，更恰当的是：",
+                a: "数字经济会完全取代实体经济，制造业不再重要",
+                b: "数字经济应与实体经济深度融合，赋能传统产业转型升级",
+                correct: "B"
+            },
+            {
+                text: "在全球治理中，“合作共赢”的含义更接近：",
+                a: "各国只顾自身利益，以邻为壑",
+                b: "通过协商合作解决共同问题，实现互利共赢",
+                correct: "B"
+            },
+            {
+                text: "推动“可持续发展”，对企业来说更合适的做法是：",
+                a: "为了短期利润，可以忽视环境和社会责任",
+                b: "在追求经济效益的同时，重视环境保护和社会责任",
+                correct: "B"
+            },
+            {
+                text: "关于中国超大规模市场优势，说法更准确的是：",
+                a: "市场规模大意味着可以忽视产品质量和服务",
+                b: "超大规模市场为企业提供广阔空间，也有利于形成规模经济",
+                correct: "B"
+            },
+            {
+                text: "在国际合作中，“共商共建共享”的核心理念是：",
+                a: "由少数强国决定规则，其他国家只能被动接受",
+                b: "各国共同参与规则制定，共同建设，共同分享发展成果",
+                correct: "B"
+            },
+            {
+                text: "对“世界和平发展”与经济合作的关系，理解更全面的是：",
+                a: "经济合作与和平发展关系不大，冲突是不可避免的",
+                b: "加强互利共赢的经济合作，有助于增进互信，减少冲突，促进和平",
+                correct: "B"
+            }
+        ];
+
+        let currentIndex = 0;
+        let selectedOption = null;
+        let userAnswers = [];
+        let score = 0;
+
+        function loadQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('questionText').textContent = q.text;
+            document.getElementById('optionAText').textContent = q.a;
+            document.getElementById('optionBText').textContent = q.b;
+            document.getElementById('currentQuestion').textContent = currentIndex + 1;
+
+            const optionA = document.getElementById('optionA');
+            const optionB = document.getElementById('optionB');
+
+            optionA.classList.remove('selected', 'correct', 'incorrect');
+            optionB.classList.remove('selected', 'correct', 'incorrect');
+
+            selectedOption = null;
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        function selectOption(option) {
+            selectedOption = option;
+
+            const optionA = document.getElementById('optionA');
+            const optionB = document.getElementById('optionB');
+
+            optionA.classList.remove('selected');
+            optionB.classList.remove('selected');
+
+            if (option === 'A') {
+                optionA.classList.add('selected');
+            } else {
+                optionB.classList.add('selected');
+            }
+
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (selectedOption === null) return;
+
+            userAnswers.push(selectedOption);
+
+            currentIndex++;
+            const progress = (currentIndex / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = Math.round(progress) + '%';
+
+            if (currentIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].correct) {
+                    score += 10;
+                }
+            }
+
+            document.getElementById('finalScore').textContent = score;
+
+            const answerList = document.getElementById('answerList');
+            answerList.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const userAns = userAnswers[index];
+                const correctAns = q.correct;
+                const isCorrect = userAns === correctAns;
+
+                const item = document.createElement('div');
+                item.className = 'answer-item';
+
+                item.innerHTML = `
+                    <p><strong>第 ${index + 1} 题：</strong>${q.text}</p >
+                    <p>你的选择：${userAns === 'A' ? 'A. ' + q.a : 'B. ' + q.b} ${isCorrect ? '✅' : '❌'}</p >
+                    <p>标准答案：${correctAns === 'A' ? 'A. ' + q.a : 'B. ' + q.b} ✅</p >
+                `;
+
+                answerList.appendChild(item);
+            });
+
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        function restartGame() {
+            currentIndex = 0;
+            userAnswers = [];
+            score = 0;
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressBar').textContent = '0%';
+            document.getElementById('resultModal').style.display = 'none';
+            loadQuestion();
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
